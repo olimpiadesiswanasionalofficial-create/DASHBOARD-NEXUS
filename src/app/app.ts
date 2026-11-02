@@ -3,9 +3,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { AuthState } from './services/auth-state';
 import { NotificationState } from './services/notification-service';
 import { NexusBridge } from './services/nexus-bridge';
+import { ProductState } from './services/product-state';
 
 // UI Components
 import { Header } from './components/header';
+import { Sidebar } from './components/sidebar';
+import { ProdukView } from './components/produk-view';
 import { AuthView } from './components/auth-view';
 import { AnalyticsView } from './components/analytics-view';
 import { E2eVaultView } from './components/e2e-vault-view';
@@ -22,6 +25,8 @@ import { PrintReportModal } from './components/print-report-modal';
   imports: [
     MatIconModule,
     Header,
+    Sidebar,
+    ProdukView,
     AuthView,
     AnalyticsView,
     E2eVaultView,
@@ -39,10 +44,11 @@ export class App {
   readonly auth = inject(AuthState);
   readonly notification = inject(NotificationState);
   readonly nexus = inject(NexusBridge);
+  readonly productState = inject(ProductState);
 
-  readonly currentTab = signal<'analytics' | 'vault' | 'api' | 'auth'>('analytics');
+  readonly currentTab = signal<'produk' | 'analytics' | 'vault' | 'api' | 'auth'>('produk');
 
-  setTab(tab: 'analytics' | 'vault' | 'api' | 'auth') {
+  setTab(tab: 'produk' | 'analytics' | 'vault' | 'api' | 'auth') {
     this.currentTab.set(tab);
   }
 }

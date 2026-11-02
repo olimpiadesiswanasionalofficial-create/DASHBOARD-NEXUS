@@ -29,122 +29,157 @@
   }
 
   <!-- Main Content Area -->
-  <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-    
+  <!-- Main Content Area -->
     @if (!auth.isAuthenticated()) {
       <!-- Unauthenticated View: Auth & License Activation -->
-      <app-auth-view></app-auth-view>
+      <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <app-auth-view></app-auth-view>
+      </main>
     } @else {
-      <!-- Authenticated View: Dashboard Layout -->
-      
-      <!-- User Welcome & Navigation Tabs Bar -->
-      <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <!-- Authenticated View: Leveling Digital Dashboard Layout matching screenshots -->
+      <div class="flex-1 flex flex-col md:flex-row w-full min-h-[calc(100vh-65px)]">
         
-        <!-- Welcome banner -->
-        <div class="flex items-center gap-3">
-          <img
-            [src]="auth.currentUser()?.avatar"
-            alt="Profil"
-            referrerpolicy="no-referrer"
-            class="h-12 w-12 rounded-2xl border-2 border-emerald-500/60 object-cover shadow-md"
-          />
-          <div>
+        <!-- Left Sidebar Navigation (image_269f18f6.png) -->
+        <app-sidebar class="hidden md:block"></app-sidebar>
+
+        <!-- Mobile Drawer Bar for Small Screens -->
+        <div class="md:hidden bg-[#0a0d14] border-b border-white/5 p-3 flex items-center justify-between overflow-x-auto">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-lg bg-red-600 text-white font-black text-sm flex items-center justify-center">LD</div>
+            <span class="text-xs font-bold text-white">Leveling Digital</span>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <button
+              type="button"
+              (click)="productState.setSidebar('produk')"
+              [class]="productState.activeSidebar() === 'produk' ? 'bg-red-600 text-white font-bold' : 'text-slate-400'"
+              class="px-2.5 py-1 rounded-lg text-xs"
+            >
+              Produk
+            </button>
+            <button
+              type="button"
+              (click)="productState.setSidebar('beranda')"
+              [class]="productState.activeSidebar() === 'beranda' ? 'bg-red-600 text-white font-bold' : 'text-slate-400'"
+              class="px-2.5 py-1 rounded-lg text-xs"
+            >
+              Beranda
+            </button>
+            <button
+              type="button"
+              (click)="productState.setSidebar('tool-builder')"
+              [class]="productState.activeSidebar() === 'tool-builder' ? 'bg-red-600 text-white font-bold' : 'text-slate-400'"
+              class="px-2.5 py-1 rounded-lg text-xs"
+            >
+              Tool
+            </button>
+            <button
+              type="button"
+              (click)="productState.setSidebar('ld-academy')"
+              [class]="productState.activeSidebar() === 'ld-academy' ? 'bg-red-600 text-white font-bold' : 'text-slate-400'"
+              class="px-2.5 py-1 rounded-lg text-xs"
+            >
+              Academy
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Main Panel -->
+        <main class="flex-1 bg-[#070a12] p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          
+          <!-- Top Info strip for logged-in user -->
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 pb-3 border-b border-white/5">
             <div class="flex items-center gap-2">
-              <h1 class="text-lg sm:text-xl font-bold text-white">
-                Halo, {{ auth.currentUser()?.name }}
-              </h1>
-              <span
-                [class]="auth.isAdmin() ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'"
-                class="rounded-full px-2 py-0.5 text-[10px] font-bold border uppercase tracking-wider"
-              >
-                {{ auth.currentUser()?.role }}
-              </span>
+              <span class="text-slate-300 font-medium">Pengguna: <strong class="text-white">{{ auth.currentUser()?.name }}</strong></span>
+              <span>&bull;</span>
+              <span class="text-emerald-400 font-mono">Lisensi: {{ auth.currentUser()?.licenseKey }}</span>
             </div>
-            <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-0.5">
-              <span>Lisensi: <span class="font-mono text-emerald-400 font-semibold">{{ auth.currentUser()?.licenseKey }}</span></span>
-              <span>&bull;</span>
-              <span class="flex items-center gap-1 text-emerald-400">
-                <mat-icon class="text-xs">verified_user</mat-icon> 2FA Aktif
-              </span>
-              <span>&bull;</span>
+
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                (click)="productState.setSidebar('produk')"
+                [class]="productState.activeSidebar() === 'produk' ? 'text-red-400 font-bold' : 'text-slate-400 hover:text-white'"
+                class="transition flex items-center gap-1 cursor-pointer"
+              >
+                <mat-icon class="text-xs">inventory_2</mat-icon>
+                <span>Produk Suite</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="productState.setSidebar('beranda')"
+                [class]="productState.activeSidebar() === 'beranda' ? 'text-red-400 font-bold' : 'text-slate-400 hover:text-white'"
+                class="transition flex items-center gap-1 cursor-pointer"
+              >
+                <mat-icon class="text-xs">analytics</mat-icon>
+                <span>Analitik</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="productState.setSidebar('pengaturan')"
+                [class]="productState.activeSidebar() === 'pengaturan' ? 'text-red-400 font-bold' : 'text-slate-400 hover:text-white'"
+                class="transition flex items-center gap-1 cursor-pointer"
+              >
+                <mat-icon class="text-xs">settings</mat-icon>
+                <span>E2EE & API</span>
+              </button>
+
               <a
                 href="https://nexus-lac-kappa.vercel.app/"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="text-cyan-400 hover:underline flex items-center gap-0.5"
               >
-                Nexus Portal <mat-icon class="text-xs">open_in_new</mat-icon>
+                <span>Nexus Portal</span>
+                <mat-icon class="text-xs">open_in_new</mat-icon>
               </a>
             </div>
           </div>
-        </div>
 
-        <!-- Dashboard Navigation Pills -->
-        <div class="flex items-center rounded-2xl bg-slate-900 border border-slate-800 p-1 text-xs overflow-x-auto">
-          <button
-            type="button"
-            (click)="setTab('analytics')"
-            [class]="currentTab() === 'analytics' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow' : 'text-slate-400 hover:text-white'"
-            class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shrink-0"
-          >
-            <mat-icon class="text-xs">analytics</mat-icon>
-            Analitik Real-Time
-          </button>
+          <!-- Dynamic View Switcher -->
+          @switch (productState.activeSidebar()) {
+            @case ('beranda') {
+              <app-analytics-view></app-analytics-view>
+            }
+            @case ('pengaturan') {
+              <div class="space-y-6">
+                <app-e2e-vault-view></app-e2e-vault-view>
+                <app-api-integrations-view></app-api-integrations-view>
+              </div>
+            }
+            @case ('bantuan') {
+              <div class="p-8 rounded-3xl bg-[#111624] border border-white/10 space-y-4 max-w-3xl">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                  <mat-icon class="text-red-500">help</mat-icon>
+                  Pusat Bantuan & Tutorial
+                </h3>
+                <p class="text-sm text-slate-300">
+                  Semua tool di dalam Produk Suite Nexus telah dilengkapi panduan step-by-step. Jika Anda mengalami kendala aktivasi, integrasi domain Vercel, atau setting pixel iklan Meta, tim teknis kami siap membantu.
+                </p>
+                <div class="pt-2">
+                  <button
+                    type="button"
+                    (click)="productState.setSidebar('ld-academy')"
+                    class="px-4 py-2.5 rounded-xl bg-red-600 text-white font-bold text-xs"
+                  >
+                    Buka Tanya Jawab AI Mentor & Admin
+                  </button>
+                </div>
+              </div>
+            }
+            @default {
+              <!-- Active Produk Suite (Riset, Brand, Scripts, Image Ads, Produk App, Landing, Videos, Scale, Tool Builder, LD Academy) -->
+              <app-produk-view></app-produk-view>
+            }
+          }
 
-          <button
-            type="button"
-            (click)="setTab('vault')"
-            [class]="currentTab() === 'vault' ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold shadow' : 'text-slate-400 hover:text-white'"
-            class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shrink-0"
-          >
-            <mat-icon class="text-xs">lock</mat-icon>
-            Brankas E2EE
-          </button>
-
-          <button
-            type="button"
-            (click)="setTab('api')"
-            [class]="currentTab() === 'api' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-bold shadow' : 'text-slate-400 hover:text-white'"
-            class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shrink-0"
-          >
-            <mat-icon class="text-xs">api</mat-icon>
-            API & Nexus Sync
-          </button>
-
-          <button
-            type="button"
-            (click)="setTab('auth')"
-            [class]="currentTab() === 'auth' ? 'bg-slate-800 text-white font-bold' : 'text-slate-400 hover:text-white'"
-            class="px-3 py-2 rounded-xl transition flex items-center gap-1.5 shrink-0"
-          >
-            <mat-icon class="text-xs">key</mat-icon>
-            Aktivasi Lisensi
-          </button>
-        </div>
+        </main>
 
       </div>
-
-      <!-- Tab Content Switcher -->
-      @switch (currentTab()) {
-        @case ('analytics') {
-          <app-analytics-view></app-analytics-view>
-        }
-        @case ('vault') {
-          <app-e2e-vault-view></app-e2e-vault-view>
-        }
-        @case ('api') {
-          <app-api-integrations-view></app-api-integrations-view>
-        }
-        @case ('auth') {
-          <div class="max-w-xl mx-auto">
-            <app-auth-view></app-auth-view>
-          </div>
-        }
-      }
-
     }
-
-  </main>
 
   <!-- Global Footer -->
   <footer class="mt-auto border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-400">
