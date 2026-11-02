@@ -277,7 +277,7 @@ export class E2eVaultView {
   readonly newSecretControl = new FormControl('', [Validators.required]);
 
   readonly testPlaintextControl = new FormControl(
-    'nexus_oauth_secret_leveling_digital_live_891024'
+    'nexus_oauth_secret_nexus_ai_solution_live_891024'
   );
   readonly liveCiphertext = signal<string>('');
   readonly livePayload = signal<EncryptedPayload | null>(null);
@@ -287,7 +287,7 @@ export class E2eVaultView {
   }
 
   async runLiveEncryption() {
-    const text = this.testPlaintextControl.value || 'Hello Leveling Digital';
+    const text = this.testPlaintextControl.value || 'Hello Nexus AI Solution';
     const payload = await encryptText(text, this.vault.masterPassphrase());
     this.livePayload.set(payload);
     this.liveCiphertext.set(payload.ciphertext);

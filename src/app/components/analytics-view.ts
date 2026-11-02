@@ -67,7 +67,7 @@ import { AuthState } from '../services/auth-state';
               +12.4%
             </span>
           </div>
-          <p class="mt-1 text-[11px] text-slate-400">Lisensi Leveling Digital aktif</p>
+          <p class="mt-1 text-[11px] text-slate-400">Lisensi Nexus AI Solution aktif</p>
         </div>
 
         <!-- Pengguna Aktif -->
@@ -467,6 +467,142 @@ import { AuthState } from '../services/auth-state';
         </div>
       </div>
 
+      <!-- SYNCHRONIZED REGISTERED MEMBERS SECTION (Admin Dashboard Sync) -->
+      <div class="rounded-3xl border border-cyan-500/30 bg-slate-900/90 p-5 sm:p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <mat-icon class="text-cyan-400 text-sm">how_to_reg</mat-icon>
+                Sinkronisasi Pendaftaran Member Baru
+              </h3>
+              <span class="rounded bg-cyan-950/80 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
+                ADMIN SYNC
+              </span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Data formulir pendaftaran member disinkronkan secara real-time ke dasbor Admin Nexus untuk validasi & aktivasi.
+            </p>
+          </div>
+
+          <!-- Member Filter Tabs -->
+          <div class="flex items-center gap-1 rounded-xl bg-slate-950 border border-slate-800 p-1 text-xs">
+            <button
+              type="button"
+              (click)="memberFilter.set('ALL')"
+              [class]="memberFilter() === 'ALL' ? 'bg-slate-800 text-white font-bold' : 'text-slate-400 hover:text-white'"
+              class="px-2.5 py-1 rounded-lg transition"
+            >
+              Semua ({{ auth.registeredMembers().length }})
+            </button>
+            <button
+              type="button"
+              (click)="memberFilter.set('PENDING')"
+              [class]="memberFilter() === 'PENDING' ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30' : 'text-slate-400 hover:text-white'"
+              class="px-2.5 py-1 rounded-lg transition flex items-center gap-1"
+            >
+              Menunggu ({{ pendingMemberCount() }})
+            </button>
+            <button
+              type="button"
+              (click)="memberFilter.set('ACTIVE')"
+              [class]="memberFilter() === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30' : 'text-slate-400 hover:text-white'"
+              class="px-2.5 py-1 rounded-lg transition"
+            >
+              Aktif ({{ activeMemberCount() }})
+            </button>
+          </div>
+        </div>
+
+        <!-- Table of Synchronized Members -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950/60 text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-3">Nama Member</th>
+                <th class="py-3 px-3">Email & WhatsApp</th>
+                <th class="py-3 px-3">Paket / Lisensi</th>
+                <th class="py-3 px-3">Status</th>
+                <th class="py-3 px-3">Waktu Daftar</th>
+                <th class="py-3 px-3 text-right">Tindakan Admin</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60">
+              @for (m of filteredRegisteredMembers(); track m.id) {
+                <tr class="hover:bg-slate-800/40 transition">
+                  <td class="py-3 px-3">
+                    <div class="font-bold text-white">{{ m.name }}</div>
+                    <div class="text-[10px] text-slate-500 font-mono">{{ m.source }}</div>
+                  </td>
+                  <td class="py-3 px-3">
+                    <div class="text-slate-300 font-mono">{{ m.email }}</div>
+                    <div class="flex items-center gap-1 text-[11px] text-emerald-400">
+                      <mat-icon class="text-xs">chat</mat-icon>
+                      <a [href]="'https://wa.me/' + cleanPhoneForWa(m.phone)" target="_blank" rel="noopener noreferrer" class="hover:underline">
+                        {{ m.phone }}
+                      </a>
+                    </div>
+                  </td>
+                  <td class="py-3 px-3">
+                    <div class="font-semibold text-slate-200">{{ formatPlanName(m.plan) }}</div>
+                    @if (m.licenseKey) {
+                      <div class="text-[10px] font-mono text-cyan-400">{{ m.licenseKey }}</div>
+                    } @else {
+                      <div class="text-[10px] text-slate-500 italic">Belum ada lisensi</div>
+                    }
+                  </td>
+                  <td class="py-3 px-3">
+                    @if (m.status === 'AKTIF') {
+                      <span class="rounded bg-emerald-950/80 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
+                        AKTIF
+                      </span>
+                    } @else if (m.status === 'TERVERIFIKASI') {
+                      <span class="rounded bg-cyan-950/80 px-2 py-0.5 text-[10px] font-bold text-cyan-400 border border-cyan-500/30">
+                        TERVERIFIKASI
+                      </span>
+                    } @else {
+                      <span class="rounded bg-amber-950/80 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-500/30">
+                        MENUNGGU
+                      </span>
+                    }
+                  </td>
+                  <td class="py-3 px-3 text-slate-500 font-mono text-[11px]">{{ m.registeredAt }}</td>
+                  <td class="py-3 px-3 text-right">
+                    <div class="flex items-center justify-end gap-1.5">
+                      @if (m.status !== 'AKTIF') {
+                        <button
+                          type="button"
+                          (click)="auth.approveMember(m.id)"
+                          class="rounded-lg bg-emerald-500/20 border border-emerald-500/30 px-2.5 py-1 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 transition flex items-center gap-1"
+                        >
+                          <mat-icon class="text-xs">check</mat-icon>
+                          Setujui & Aktifkan
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        (click)="auth.deleteMember(m.id)"
+                        class="rounded-lg p-1 text-slate-500 hover:text-red-400 hover:bg-slate-900 transition"
+                        title="Hapus Member"
+                        aria-label="Hapus Member"
+                      >
+                        <mat-icon class="text-xs">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="text-center py-6 text-slate-500">
+                    Tidak ada data pendaftaran member pada kategori ini.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   `,
 })
@@ -476,6 +612,42 @@ export class AnalyticsView {
 
   readonly searchControl = new FormControl('');
   readonly hoveredPoint = signal<ChartPoint | null>(null);
+  readonly memberFilter = signal<'ALL' | 'PENDING' | 'ACTIVE'>('ALL');
+
+  pendingMemberCount = computed(() =>
+    this.auth.registeredMembers().filter((m) => m.status === 'MENUNGGU_VERIFIKASI').length
+  );
+
+  activeMemberCount = computed(() =>
+    this.auth.registeredMembers().filter((m) => m.status === 'AKTIF' || m.status === 'TERVERIFIKASI').length
+  );
+
+  filteredRegisteredMembers = computed(() => {
+    const filter = this.memberFilter();
+    const list = this.auth.registeredMembers();
+    if (filter === 'PENDING') {
+      return list.filter((m) => m.status === 'MENUNGGU_VERIFIKASI');
+    }
+    if (filter === 'ACTIVE') {
+      return list.filter((m) => m.status === 'AKTIF' || m.status === 'TERVERIFIKASI');
+    }
+    return list;
+  });
+
+  cleanPhoneForWa(phone: string): string {
+    let clean = phone.replace(/[^\d]/g, '');
+    if (clean.startsWith('0')) {
+      clean = '62' + clean.slice(1);
+    }
+    return clean;
+  }
+
+  formatPlanName(plan: string): string {
+    if (plan === 'PRO_LICENSE') return 'Pro Member';
+    if (plan === 'NEXUS_VIP') return 'Nexus VIP Member';
+    if (plan === 'ENTERPRISE') return 'Enterprise Suite';
+    return 'Member Gratis';
+  }
 
   getMetricValue(pt: ChartPoint): number {
     const metric = this.analytics.selectedMetric();

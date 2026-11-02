@@ -25,7 +25,7 @@ import { AuthState } from '../services/auth-state';
                 </div>
                 <div>
                   <h3 class="text-base font-bold text-white">Masuk dengan Google</h3>
-                  <p class="text-xs text-slate-400">Pilih akun untuk melanjutkan ke Leveling Digital</p>
+                  <p class="text-xs text-slate-400">Pilih akun untuk melanjutkan ke Nexus AI Solution</p>
                 </div>
               } @else {
                 <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1877F2] text-white shadow-md">
@@ -76,7 +76,7 @@ import { AuthState } from '../services/auth-state';
 
             <button
               type="button"
-              (click)="selectAccount('admin.nexus@levelingdigital.com', 'Administrator Leveling', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80')"
+              (click)="selectAccount('admin.nexus@nexusaisolution.com', 'Administrator Nexus AI', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80')"
               class="w-full flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 p-3 hover:border-cyan-500/50 hover:bg-slate-800/80 transition text-left group"
             >
               <div class="flex items-center gap-3">
@@ -87,8 +87,8 @@ import { AuthState } from '../services/auth-state';
                   class="h-9 w-9 rounded-full border border-cyan-500 object-cover"
                 />
                 <div>
-                  <div class="text-sm font-semibold text-white group-hover:text-cyan-400">Administrator Leveling & Nexus</div>
-                  <div class="text-xs text-slate-400 font-mono">admin.nexus&#64;levelingdigital.com</div>
+                  <div class="text-sm font-semibold text-white group-hover:text-cyan-400">Administrator Nexus AI Solution</div>
+                  <div class="text-xs text-slate-400 font-mono">admin.nexus&#64;nexusaisolution.com</div>
                 </div>
               </div>
               <mat-icon class="text-slate-500 group-hover:text-cyan-400 text-sm">arrow_forward</mat-icon>

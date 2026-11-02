@@ -21,7 +21,7 @@ import { evaluatePasswordStrength, PasswordStrength } from '../core/auth-validat
               </div>
               <div>
                 <h3 class="text-base font-bold text-white">Pemulihan Kata Sandi</h3>
-                <p class="text-xs text-slate-400">Integrasi email verifikasi keamanan Leveling Digital</p>
+                <p class="text-xs text-slate-400">Integrasi email verifikasi keamanan Nexus AI Solution</p>
               </div>
             </div>
             <button
@@ -214,7 +214,7 @@ import { evaluatePasswordStrength, PasswordStrength } from '../core/auth-validat
               </div>
               <h4 class="text-base font-bold text-white">Kata Sandi Berhasil Diperbarui</h4>
               <p class="text-xs text-slate-400 max-w-xs mx-auto">
-                Akun Anda telah diamankan dengan kata sandi baru. Anda sekarang dapat masuk kembali ke Leveling Digital & Nexus.
+                Akun Anda telah diamankan dengan kata sandi baru. Anda sekarang dapat masuk kembali ke Nexus AI Solution.
               </p>
               <button
                 type="button"
@@ -234,7 +234,7 @@ import { evaluatePasswordStrength, PasswordStrength } from '../core/auth-validat
 export class ForgotPasswordModal {
   readonly auth = inject(AuthState);
 
-  readonly emailControl = new FormControl('budi.santoso@levelingdigital.com', [Validators.required]);
+  readonly emailControl = new FormControl('', [Validators.required]);
   readonly otpControl = new FormControl('', [Validators.required]);
   readonly newPasswordControl = new FormControl('', [Validators.required]);
   readonly confirmPasswordControl = new FormControl('', [Validators.required]);

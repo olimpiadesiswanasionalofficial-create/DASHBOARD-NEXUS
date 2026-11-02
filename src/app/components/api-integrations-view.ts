@@ -69,7 +69,7 @@ export interface ApiKeyItem {
           </div>
         </div>
 
-        <!-- Leveling Digital Core API -->
+        <!-- Nexus AI Solution Core API -->
         <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-lg backdrop-blur-sm relative flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between">
@@ -80,7 +80,7 @@ export interface ApiKeyItem {
                 TERHUBUNG
               </span>
             </div>
-            <div class="mt-3 font-bold text-white text-sm">Leveling Digital Engine</div>
+            <div class="mt-3 font-bold text-white text-sm">Nexus AI Solution Engine</div>
             <p class="mt-1 text-[11px] text-slate-400 line-clamp-2">
               Validasi lisensi instan & sinkronisasi token aktivasi resmi.
             </p>
@@ -285,7 +285,7 @@ export class ApiIntegrationsView {
 
     this.analytics.addAuditLog({
       action: 'Webhook Sync Sent',
-      user: 'api_gateway@levelingdigital.com',
+      user: 'api_gateway@nexusaisolution.com',
       ip: '10.0.4.1',
       location: 'Nexus Cloud Gateway',
       status: 'SUKSES',

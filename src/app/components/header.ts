@@ -25,7 +25,7 @@ import { NexusBridge } from '../services/nexus-bridge';
           <div>
             <div class="flex items-center gap-2">
               <span class="text-base font-extrabold tracking-tight text-white sm:text-lg">
-                LEVELING <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">DIGITAL</span>
+                NEXUS <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">AI SOLUTION</span>
               </span>
               <span class="rounded bg-emerald-950/80 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/30">
                 E2EE SAFE

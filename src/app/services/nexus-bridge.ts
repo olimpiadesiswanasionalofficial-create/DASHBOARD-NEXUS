@@ -19,7 +19,7 @@ export class NexusBridge {
     connected: true,
     lastSyncTime: 'Sinkronisasi Otomatis',
     targetRole: 'member',
-    ssoTicket: this.generateSsoToken('member', 'user@levelingdigital.com'),
+    ssoTicket: this.generateSsoToken('member', 'user@nexusaisolution.com'),
   });
 
   readonly isPreviewModalOpen = signal<boolean>(false);
@@ -28,7 +28,7 @@ export class NexusBridge {
     const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
     const payload = btoa(
       JSON.stringify({
-        iss: 'leveling-digital-auth',
+        iss: 'nexus-ai-solution-auth',
         sub: userEmail,
         role: role,
         aud: 'https://nexus-lac-kappa.vercel.app/',
@@ -53,7 +53,7 @@ export class NexusBridge {
   getSsoLaunchUrl(): string {
     const cfg = this.bridgeConfig();
     const cleanUrl = cfg.baseUrl.endsWith('/') ? cfg.baseUrl : cfg.baseUrl + '/';
-    return `${cleanUrl}?sso_token=${encodeURIComponent(cfg.ssoTicket)}&role=${cfg.targetRole}&ref=leveling_digital`;
+    return `${cleanUrl}?sso_token=${encodeURIComponent(cfg.ssoTicket)}&role=${cfg.targetRole}&ref=nexus_ai_solution`;
   }
 
   openNexusPortal() {

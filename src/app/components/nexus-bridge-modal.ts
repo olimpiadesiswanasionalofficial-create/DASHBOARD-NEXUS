@@ -103,7 +103,7 @@ import { AuthState } from '../services/auth-state';
                   Fitur Member Nexus
                 </div>
                 <ul class="text-slate-400 space-y-1 text-[11px]">
-                  <li>• Sinkronisasi lisensi aktivasi Leveling Digital</li>
+                  <li>• Sinkronisasi lisensi aktivasi Nexus AI Solution</li>
                   <li>• Akses instan modul member & konten eksklusif</li>
                   <li>• Keamanan sesi dua faktor terverifikasi</li>
                 </ul>
@@ -167,7 +167,7 @@ export class NexusBridgeModal {
   readonly copied = signal<boolean>(false);
 
   selectRole(role: 'member' | 'admin') {
-    const email = this.auth.currentUser()?.email || 'user@levelingdigital.com';
+    const email = this.auth.currentUser()?.email || 'user@nexusaisolution.com';
     this.nexus.setTargetRole(role, email);
   }
 

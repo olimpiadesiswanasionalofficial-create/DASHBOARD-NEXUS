@@ -1,5 +1,5 @@
 /**
- * Pure validation and formatting logic for Leveling Digital & Nexus Auth
+ * Pure validation and formatting logic for Nexus AI Solution Auth
  */
 
 export interface PasswordStrength {
@@ -67,21 +67,21 @@ export function validateActivationCode(code: string): ActivationCodeValidation {
   }
 
   // Preset quick test keys
-  if (clean === 'LD-PREMIUM-2026' || clean === 'LD-PRO-2026') {
+  if (clean === 'LD-PREMIUM-2026' || clean === 'LD-PRO-2026' || clean === 'NEXUS-PRO-2026' || clean === 'NEXUS-PREMIUM-2026') {
     return {
       isValid: true,
       tier: 'PRO',
-      productName: 'Leveling Digital Pro License',
+      productName: 'Nexus AI Solution Pro License',
       expiresInDays: 365,
-      message: 'Kode Pro Leveling Digital valid! Siap diaktifkan.',
+      message: 'Kode Pro Nexus AI Solution valid! Siap diaktifkan.',
     };
   }
 
-  if (clean === 'LD-ENTERPRISE-VIP' || clean === 'ENTERPRISE') {
+  if (clean === 'LD-ENTERPRISE-VIP' || clean === 'ENTERPRISE' || clean === 'NEXUS-ENTERPRISE') {
     return {
       isValid: true,
       tier: 'ENTERPRISE',
-      productName: 'Leveling Digital Enterprise Suite',
+      productName: 'Nexus AI Solution Enterprise Suite',
       expiresInDays: 730,
       message: 'Lisensi Enterprise Unlimited terverifikasi.',
     };
@@ -91,9 +91,9 @@ export function validateActivationCode(code: string): ActivationCodeValidation {
     return {
       isValid: true,
       tier: 'NEXUS_VIP',
-      productName: 'Nexus Global Member License',
+      productName: 'Nexus AI Solution VIP License',
       expiresInDays: 365,
-      message: 'Akses Nexus VIP Member aktif dan terhubung.',
+      message: 'Akses VIP Nexus AI Solution aktif dan terhubung.',
     };
   }
 
@@ -101,21 +101,21 @@ export function validateActivationCode(code: string): ActivationCodeValidation {
     return {
       isValid: true,
       tier: 'ADMIN',
-      productName: 'Leveling & Nexus Master Administrator',
+      productName: 'Nexus AI Solution Master Administrator',
       expiresInDays: 9999,
       message: 'Kunci Otoritas Master Admin terkonfirmasi.',
     };
   }
 
-  // Generic Leveling Digital format: LD-XXXX-XXXX-XXXX
-  const pattern = /^LD-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+  // Nexus AI Solution format: NEXUS-XXXX-XXXX-XXXX or LD-XXXX-XXXX-XXXX
+  const pattern = /^(LD|NEXUS)-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
   if (pattern.test(clean)) {
     return {
       isValid: true,
       tier: 'PRO',
-      productName: 'Leveling Digital Standard License',
+      productName: 'Nexus AI Solution Standard License',
       expiresInDays: 365,
-      message: 'Kode aktivasi resmi Leveling Digital valid.',
+      message: 'Kode aktivasi resmi Nexus AI Solution valid.',
     };
   }
 
@@ -124,7 +124,7 @@ export function validateActivationCode(code: string): ActivationCodeValidation {
     tier: 'INVALID',
     productName: '',
     expiresInDays: 0,
-    message: 'Format kode tidak valid. Gunakan format LD-XXXX-XXXX-XXXX atau coba kode demo: LD-PREMIUM-2026',
+    message: 'Kode aktivasi tidak valid. Gunakan format NEXUS-XXXX-XXXX-XXXX atau coba kode demo: NEXUS-PREMIUM-2026 / PRO-NEXUS-ADMIN',
   };
 }
 
@@ -152,3 +152,38 @@ export function convertToCsv(headers: string[], rows: (string | number)[][]): st
   const dataRows = rows.map((row) => row.map(escapeCell).join(','));
   return [headerRow, ...dataRows].join('\r\n');
 }
+
+export interface RegistrationInput {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface RegistrationValidationResult {
+  isValid: boolean;
+  message?: string;
+  field?: 'name' | 'email' | 'phone' | 'password' | 'confirmPassword';
+}
+
+export function validateRegistration(data: RegistrationInput): RegistrationValidationResult {
+  if (!data.name || data.name.trim().length < 2) {
+    return { isValid: false, message: 'Nama lengkap wajib diisi (minimal 2 karakter).', field: 'name' };
+  }
+  if (!data.email || !validateEmail(data.email)) {
+    return { isValid: false, message: 'Format alamat email tidak valid.', field: 'email' };
+  }
+  const cleanPhone = data.phone.trim().replace(/[\s-]/g, '');
+  if (!cleanPhone || cleanPhone.length < 8) {
+    return { isValid: false, message: 'Nomor WhatsApp / telepon wajib diisi (minimal 8 digit).', field: 'phone' };
+  }
+  if (!data.password || data.password.length < 8) {
+    return { isValid: false, message: 'Kata sandi minimal harus 8 karakter.', field: 'password' };
+  }
+  if (data.password !== data.confirmPassword) {
+    return { isValid: false, message: 'Konfirmasi kata sandi tidak cocok.', field: 'confirmPassword' };
+  }
+  return { isValid: true };
+}
+

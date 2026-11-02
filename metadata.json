@@ -1,6 +1,6 @@
 {
-  "name": "Leveling Digital & Nexus Secure Auth & Analytics",
-  "description": "Sistem autentikasi aman Leveling Digital dengan 2FA, pemulihan email, SSO Google & Facebook, enkripsi End-to-End, dasbor analitik real-time, ekspor PDF/CSV, dan integrasi Nexus portal.",
+  "name": "Nexus AI Solution Secure Auth & Analytics",
+  "description": "Sistem autentikasi aman Nexus AI Solution dengan 2FA, pemulihan email, SSO Google & Facebook, enkripsi End-to-End, dasbor analitik real-time, ekspor PDF/CSV, dan integrasi Nexus portal.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

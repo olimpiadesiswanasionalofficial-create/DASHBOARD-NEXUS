@@ -15,7 +15,7 @@ export interface VaultRecord {
   providedIn: 'root',
 })
 export class VaultState {
-  readonly masterPassphrase = signal<string>('LevelingDigital#Master2026!');
+  readonly masterPassphrase = signal<string>('NexusAISolution#Master2026!');
   readonly isVaultUnlocked = signal<boolean>(true);
   readonly masterFingerprint = signal<string>('B8:4C:91:2E:7A:3F:01:99');
 
@@ -39,7 +39,7 @@ export class VaultState {
       defaultKey
     );
     const seed3 = await encryptText(
-      'LD-ENTERPRISE-MASTER-KEY-VALID-UNTIL-2028',
+      'NEXUS-ENTERPRISE-MASTER-KEY-VALID-UNTIL-2028',
       defaultKey
     );
 

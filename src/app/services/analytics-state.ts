@@ -182,7 +182,7 @@ export class AnalyticsState {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `Leveling-Digital-Analytics-${Date.now()}.csv`);
+    link.setAttribute('download', `Nexus-AI-Solution-Analytics-${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

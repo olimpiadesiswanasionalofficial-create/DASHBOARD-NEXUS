@@ -5,9 +5,54 @@ import {
   validateActivationCode,
   validateEmail,
   verifyTotpCode,
-  convertToCsv
+  convertToCsv,
+  validateRegistration
 } from './auth-validator';
 import { encryptText, decryptText } from './crypto-e2e';
+
+test('validateRegistration rejects invalid inputs', () => {
+  const emptyName = validateRegistration({
+    name: '',
+    email: 'test@example.com',
+    phone: '081234567890',
+    password: 'Password123!',
+    confirmPassword: 'Password123!',
+  });
+  assert.equal(emptyName.isValid, false);
+  assert.equal(emptyName.field, 'name');
+
+  const badEmail = validateRegistration({
+    name: 'Budi Santoso',
+    email: 'bad-email',
+    phone: '081234567890',
+    password: 'Password123!',
+    confirmPassword: 'Password123!',
+  });
+  assert.equal(badEmail.isValid, false);
+  assert.equal(badEmail.field, 'email');
+
+  const mismatchedPassword = validateRegistration({
+    name: 'Budi Santoso',
+    email: 'budi@example.com',
+    phone: '081234567890',
+    password: 'Password123!',
+    confirmPassword: 'DifferentPassword!',
+  });
+  assert.equal(mismatchedPassword.isValid, false);
+  assert.equal(mismatchedPassword.field, 'confirmPassword');
+});
+
+test('validateRegistration accepts valid registration payload', () => {
+  const valid = validateRegistration({
+    name: 'Ahmad Faisal',
+    email: 'ahmad.faisal@nexusaisolution.com',
+    phone: '081298765432',
+    password: 'SecurePass2026!',
+    confirmPassword: 'SecurePass2026!',
+  });
+  assert.equal(valid.isValid, true);
+});
+
 
 test('evaluatePasswordStrength evaluates weak passwords correctly', () => {
   const weak = evaluatePasswordStrength('12345');
@@ -16,7 +61,7 @@ test('evaluatePasswordStrength evaluates weak passwords correctly', () => {
 });
 
 test('evaluatePasswordStrength evaluates strong passwords correctly', () => {
-  const strong = evaluatePasswordStrength('P@ssw0rdLeveling2026!');
+  const strong = evaluatePasswordStrength('P@ssw0rdNexus2026!');
   assert.equal(strong.checks.minLength, true);
   assert.equal(strong.checks.hasUppercase, true);
   assert.equal(strong.checks.hasLowercase, true);
@@ -30,6 +75,10 @@ test('validateActivationCode recognizes preset and format codes', () => {
   assert.equal(pro.isValid, true);
   assert.equal(pro.tier, 'PRO');
 
+  const nexusPro = validateActivationCode('NEXUS-PREMIUM-2026');
+  assert.equal(nexusPro.isValid, true);
+  assert.equal(nexusPro.tier, 'PRO');
+
   const admin = validateActivationCode('PRO-NEXUS-ADMIN');
   assert.equal(admin.isValid, true);
   assert.equal(admin.tier, 'ADMIN');
@@ -42,7 +91,7 @@ test('validateActivationCode recognizes preset and format codes', () => {
 });
 
 test('validateEmail validates RFC compliant emails', () => {
-  assert.equal(validateEmail('test@levelingdigital.com'), true);
+  assert.equal(validateEmail('test@nexusaisolution.com'), true);
   assert.equal(validateEmail('invalid-email'), false);
   assert.equal(validateEmail('user@domain'), false);
 });

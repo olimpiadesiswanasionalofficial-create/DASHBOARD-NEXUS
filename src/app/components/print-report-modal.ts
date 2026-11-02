@@ -48,13 +48,13 @@ import { AnalyticsState } from '../services/analytics-state';
             <div class="flex items-start justify-between border-b-2 border-slate-900 pb-4">
               <div>
                 <div class="text-xl font-extrabold tracking-tight text-slate-900">
-                  LEVELING DIGITAL &bull; NEXUS ANALYTICS REPORT
+                  NEXUS AI SOLUTION &bull; ANALYTICS & AUDIT REPORT
                 </div>
                 <div class="text-xs text-slate-600 mt-1">
                   Portal Autentikasi 2FA, Enkripsi E2EE, dan Telemetri Akses Global
                 </div>
                 <div class="text-xs text-slate-500 font-mono mt-0.5">
-                  https://nexus-lac-kappa.vercel.app/ &bull; app.levelingdigital.com
+                  https://nexus-lac-kappa.vercel.app/ &bull; nexusaisolution.com
                 </div>
               </div>
 
@@ -130,7 +130,7 @@ import { AnalyticsState } from '../services/analytics-state';
             <!-- Footer signature line -->
             <div class="pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
               <div>
-                Leveling Digital &copy; 2026. Hak Cipta Dilindungi Undang-Undang.
+                Nexus AI Solution &copy; 2026. Hak Cipta Dilindungi Undang-Undang.
               </div>
               <div class="font-mono text-[11px]">
                 ID Dokumen: NEXUS-RPT-{{ todayTimestamp }}

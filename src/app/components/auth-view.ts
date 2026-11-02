@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthState } from '../services/auth-state';
-import { validateActivationCode, ActivationCodeValidation } from '../core/auth-validator';
+import { AuthState, RegisteredMember } from '../services/auth-state';
+import { validateActivationCode, ActivationCodeValidation, evaluatePasswordStrength, PasswordStrength } from '../core/auth-validator';
 
 @Component({
   selector: 'app-auth-view',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatIconModule, ReactiveFormsModule],
   template: `
-    <div class="w-full max-w-lg mx-auto py-6 px-4 sm:px-0">
+    <div class="w-full max-w-xl mx-auto py-6 px-4 sm:px-0">
       
       <!-- Card Container with Glassmorphism -->
       <div class="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/90 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
@@ -20,38 +20,38 @@ import { validateActivationCode, ActivationCodeValidation } from '../core/auth-v
 
         <!-- Brand Title -->
         <div class="text-center mb-6">
-          <div class="inline-flex items-center gap-2 rounded-2xl bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 text-xs font-semibold text-emerald-400 mb-2">
+          <div class="inline-flex items-center gap-2 rounded-2xl bg-cyan-950/60 border border-cyan-500/30 px-3 py-1 text-xs font-semibold text-cyan-400 mb-2">
             <mat-icon class="text-sm">verified_user</mat-icon>
-            LEVELING DIGITAL &bull; PORTAL RESMI
+            NEXUS AI SOLUTION &bull; PORTAL RESMI
           </div>
           <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Akses & Aktivasi Lisensi
+            Autentikasi Lisensi Resmi
           </h1>
           <p class="mt-1 text-xs sm:text-sm text-slate-400">
-            Terintegrasi dengan <span class="text-cyan-400 font-semibold">Nexus Dashboard</span> & Proteksi End-to-End
+            Masuk Langsung Menggunakan <span class="text-cyan-400 font-semibold">Kode Aktivasi / Lisensi</span>
           </p>
         </div>
 
-        <!-- 2FA Active Screen (When user is in 2FA challenge) -->
+        <!-- 2FA Active Challenge Screen (if triggered) -->
         @if (auth.is2faPending()) {
           <div class="space-y-4 animate-fade-in">
             <div class="rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-5 text-center">
               <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 mb-3">
                 <mat-icon class="text-3xl">security</mat-icon>
               </div>
-              <h2 class="text-base font-bold text-white">Verifikasi Autentikasi Dua Faktor</h2>
+              <h2 class="text-base font-bold text-white">Verifikasi Autentikasi Dua Faktor (2FA)</h2>
               <p class="mt-1 text-xs text-slate-300">
-                Masukkan 6-digit kode verifikasi dari aplikasi Authenticator Anda untuk akun <span class="text-cyan-300 font-mono">{{ auth.pendingLoginEmail() }}</span>.
+                Masukkan 6-digit kode verifikasi TOTP untuk otorisasi akun.
               </p>
 
-              <!-- Helper Demo Code for seamless testing -->
+              <!-- Helper Demo Code for testing -->
               <div class="mt-3 inline-flex items-center gap-2 rounded-xl bg-slate-950 border border-cyan-500/30 px-3 py-1.5 text-xs">
                 <span class="text-slate-400">Kode TOTP Demo:</span>
                 <span class="font-mono font-bold text-emerald-400 text-sm tracking-wider">{{ auth.simulatedTotpCode() }}</span>
                 <button
                   type="button"
                   (click)="twoFactorInputControl.setValue(auth.simulatedTotpCode())"
-                  class="ml-1 text-[11px] text-cyan-400 hover:underline"
+                  class="ml-1 text-[11px] text-cyan-400 hover:underline cursor-pointer"
                 >
                   Gunakan
                 </button>
@@ -59,9 +59,9 @@ import { validateActivationCode, ActivationCodeValidation } from '../core/auth-v
             </div>
 
             <div>
-              <label for="2fa-code" class="block text-xs font-semibold text-slate-300 mb-1.5 text-center">Kode 6-Digit TOTP</label>
+              <label for="two-factor-code" class="block text-xs font-semibold text-slate-300 mb-1.5 text-center">Kode 6-Digit TOTP</label>
               <input
-                id="2fa-code"
+                id="two-factor-code"
                 type="text"
                 maxlength="6"
                 [formControl]="twoFactorInputControl"
@@ -81,14 +81,14 @@ import { validateActivationCode, ActivationCodeValidation } from '../core/auth-v
               <button
                 type="button"
                 (click)="submit2FACode()"
-                class="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/20 hover:opacity-95 transition"
+                class="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/20 hover:opacity-95 transition cursor-pointer"
               >
                 Verifikasi & Buka Dasbor
               </button>
               <button
                 type="button"
                 (click)="auth.cancel2FA()"
-                class="w-full rounded-xl border border-slate-800 py-2 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                class="w-full rounded-xl border border-slate-800 py-2 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
               >
                 Batal / Kembali
               </button>
@@ -96,112 +96,313 @@ import { validateActivationCode, ActivationCodeValidation } from '../core/auth-v
           </div>
         } @else {
 
-          <!-- Tabs Switcher -->
-          <div class="grid grid-cols-2 gap-1 rounded-2xl bg-slate-950 p-1 mb-6 border border-slate-800">
-            <button
-              type="button"
-              (click)="auth.setAuthTab('activate')"
-              [class]="auth.activeAuthTab() === 'activate' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow' : 'text-slate-400 hover:text-white'"
-              class="rounded-xl py-2 text-xs transition-all flex items-center justify-center gap-1.5"
-            >
-              <mat-icon class="text-sm">key</mat-icon> Aktivasi Lisensi
-            </button>
+          <!-- Dual Tab Switcher: Masuk dengan Lisensi vs Pendaftaran Member -->
+          <div class="grid grid-cols-2 gap-1.5 rounded-2xl bg-slate-950 p-1.5 mb-6 border border-slate-800 text-xs">
             <button
               type="button"
               (click)="auth.setAuthTab('login')"
-              [class]="auth.activeAuthTab() === 'login' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-bold shadow' : 'text-slate-400 hover:text-white'"
-              class="rounded-xl py-2 text-xs transition-all flex items-center justify-center gap-1.5"
+              [class]="auth.activeAuthTab() === 'login' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-bold shadow-md' : 'text-slate-400 hover:text-white'"
+              class="rounded-xl py-2.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <mat-icon class="text-sm">login</mat-icon> Masuk Akun
+              <mat-icon class="text-sm">key</mat-icon>
+              <span>Masuk dengan Lisensi</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="auth.setAuthTab('register')"
+              [class]="auth.activeAuthTab() === 'register' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow-md' : 'text-slate-400 hover:text-white'"
+              class="rounded-xl py-2.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <mat-icon class="text-sm">person_add</mat-icon>
+              <span>Daftar Member Baru</span>
             </button>
           </div>
 
-          <!-- TAB 1: AKTIVASI LISENSI (Leveling Digital /activate) -->
-          @if (auth.activeAuthTab() === 'activate') {
-            <form class="space-y-4" (submit)="$event.preventDefault(); handleActivate()">
+          <!-- Registration Success Banner with Quick Login Action -->
+          @if (registrationSuccessMsg()) {
+            <div class="mb-5 rounded-2xl border border-emerald-500/40 bg-emerald-950/40 p-4 text-xs text-emerald-300 animate-fade-in space-y-2">
+              <div class="flex items-center gap-2 font-bold text-sm text-white">
+                <mat-icon class="text-emerald-400 text-base">task_alt</mat-icon>
+                Pendaftaran Berhasil Disinkronkan ke Admin!
+              </div>
+              <p class="text-slate-300 leading-relaxed">{{ registrationSuccessMsg() }}</p>
               
-              <!-- Activation Code Input -->
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label for="activation-code" class="text-xs font-semibold text-slate-300 flex items-center gap-1">
-                    <mat-icon class="text-xs text-emerald-400">vpn_key</mat-icon>
-                    Kode Aktivasi / Lisensi
-                  </label>
-                  <span class="text-[10px] text-slate-400 font-mono">Format: LD-XXXX-XXXX-XXXX</span>
-                </div>
-
-                <input
-                  id="activation-code"
-                  type="text"
-                  [formControl]="activationCodeControl"
-                  (input)="onActivationCodeChange()"
-                  placeholder="Contoh: LD-PREMIUM-2026"
-                  class="w-full rounded-2xl border border-slate-700 bg-slate-950 py-3 px-4 text-sm font-mono uppercase text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-
-                <!-- Quick Test Keys Chips -->
-                <div class="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
-                  <span class="text-slate-500 text-[10px]">Coba Demo:</span>
+              @if (registeredLicenseKey()) {
+                <div class="rounded-xl bg-slate-950 border border-emerald-500/50 p-3 flex items-center justify-between">
+                  <div>
+                    <span class="text-[10px] text-slate-400 block">KODE LISENSI ANDA:</span>
+                    <span class="font-mono text-base font-extrabold text-emerald-400">{{ registeredLicenseKey() }}</span>
+                  </div>
                   <button
                     type="button"
-                    (click)="fillPresetCode('LD-PREMIUM-2026')"
-                    class="rounded-lg bg-slate-800/80 px-2 py-0.5 text-emerald-400 hover:bg-slate-700 font-mono"
+                    (click)="useRegisteredLicense()"
+                    class="rounded-xl bg-emerald-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:bg-emerald-400 transition cursor-pointer flex items-center gap-1.5"
                   >
-                    LD-PREMIUM-2026
+                    <mat-icon class="text-sm">login</mat-icon>
+                    Gunakan & Masuk
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- ============================================================== -->
+          <!-- TAB 1: LOGIN MENGGUNAKAN KODE AKTIVASI / LISENSI SAJA           -->
+          <!-- ============================================================== -->
+          @if (auth.activeAuthTab() === 'login') {
+            <form class="space-y-4 animate-fade-in" (submit)="$event.preventDefault(); handleLicenseLogin()">
+              
+              <!-- Activation Code / License Input (The ONLY input field on login) -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label for="login-license-code" class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <mat-icon class="text-sm text-cyan-400">vpn_key</mat-icon>
+                    Kode Aktivasi / Lisensi Resmi
+                  </label>
+                  <span class="text-[10px] text-slate-400 font-mono">Format: NEXUS-XXXX-XXXX-XXXX</span>
+                </div>
+
+                <div class="relative">
+                  <input
+                    id="login-license-code"
+                    type="text"
+                    [formControl]="licenseInputControl"
+                    (input)="onLicenseInputChange()"
+                    placeholder="Masukkan Kode Lisensi (Contoh: NEXUS-PREMIUM-2026 atau PRO-NEXUS-ADMIN)"
+                    class="w-full rounded-2xl border border-slate-700 bg-slate-950 py-3.5 pl-4 pr-10 text-sm font-mono uppercase text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                  />
+                  @if (licenseValidation().isValid) {
+                    <mat-icon class="absolute right-3.5 top-3.5 text-emerald-400 text-lg">check_circle</mat-icon>
+                  }
+                </div>
+
+                <!-- Quick Preset Demo Keys for Fast Testing -->
+                <div class="mt-2.5 flex flex-wrap items-center gap-2 text-xs">
+                  <span class="text-slate-500 text-[11px] font-medium">Kunci Demo Cepat:</span>
+                  <button
+                    type="button"
+                    (click)="fillPresetLicense('NEXUS-PREMIUM-2026')"
+                    class="rounded-lg bg-slate-800/90 border border-slate-700 px-2.5 py-1 text-emerald-400 hover:bg-slate-700 hover:border-emerald-500/40 font-mono text-[11px] transition cursor-pointer flex items-center gap-1"
+                  >
+                    <mat-icon class="text-xs">person</mat-icon>
+                    NEXUS-PREMIUM-2026
                   </button>
                   <button
                     type="button"
-                    (click)="fillPresetCode('PRO-NEXUS-ADMIN')"
-                    class="rounded-lg bg-slate-800/80 px-2 py-0.5 text-cyan-400 hover:bg-slate-700 font-mono"
+                    (click)="fillPresetLicense('PRO-NEXUS-ADMIN')"
+                    class="rounded-lg bg-slate-800/90 border border-slate-700 px-2.5 py-1 text-cyan-400 hover:bg-slate-700 hover:border-cyan-500/40 font-mono text-[11px] transition cursor-pointer flex items-center gap-1"
                   >
+                    <mat-icon class="text-xs">shield</mat-icon>
                     PRO-NEXUS-ADMIN
                   </button>
                   <button
                     type="button"
-                    (click)="fillPresetCode('NEXUS-VIP-ACCESS')"
-                    class="rounded-lg bg-slate-800/80 px-2 py-0.5 text-purple-400 hover:bg-slate-700 font-mono"
+                    (click)="fillPresetLicense('NEXUS-VIP-ACCESS')"
+                    class="rounded-lg bg-slate-800/90 border border-slate-700 px-2.5 py-1 text-purple-400 hover:bg-slate-700 hover:border-purple-500/40 font-mono text-[11px] transition cursor-pointer flex items-center gap-1"
                   >
+                    <mat-icon class="text-xs">workspace_premium</mat-icon>
                     NEXUS-VIP-ACCESS
                   </button>
                 </div>
 
-                <!-- Validation Status Badge -->
-                @if (activationValidation().isValid) {
-                  <div class="mt-2.5 rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-2.5 text-xs text-emerald-300 flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                      <mat-icon class="text-emerald-400 text-sm">check_circle</mat-icon>
-                      <span class="font-semibold">{{ activationValidation().productName }}</span>
+                <!-- Real-Time Cryptographic Validation Badge -->
+                @if (licenseValidation().isValid) {
+                  <div class="mt-3 rounded-2xl border border-emerald-500/40 bg-emerald-950/30 p-3 text-xs text-emerald-300 flex items-center justify-between animate-fade-in">
+                    <div class="flex items-center gap-2.5">
+                      <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
+                        <mat-icon class="text-sm">verified</mat-icon>
+                      </div>
+                      <div>
+                        <div class="font-bold text-white text-xs">{{ licenseValidation().productName }}</div>
+                        <div class="text-[11px] text-emerald-400/90">Lisensi Terverifikasi &bull; Siap Masuk ke Sistem</div>
+                      </div>
                     </div>
-                    <span class="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
-                      {{ activationValidation().tier }}
+                    <span class="rounded-lg bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-1 text-[11px] font-bold text-emerald-300 uppercase tracking-wider">
+                      {{ licenseValidation().tier }}
                     </span>
                   </div>
                 }
               </div>
 
-              <!-- Name & Email Inputs -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              @if (authErrorMessage()) {
+                <div class="rounded-xl border border-red-800/50 bg-red-950/40 p-3 text-xs text-red-300 flex items-center gap-2">
+                  <mat-icon class="text-red-400 text-sm shrink-0">error_outline</mat-icon>
+                  <span>{{ authErrorMessage() }}</span>
+                </div>
+              }
+
+              <!-- Submit Login with License Button -->
+              <button
+                type="submit"
+                class="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/25 hover:opacity-95 transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <mat-icon class="text-base">lock_open</mat-icon>
+                <span>Masuk dengan Lisensi Resmi</span>
+              </button>
+
+              <!-- Not a Member Yet Callout Banner -->
+              <div class="rounded-2xl border border-slate-800 bg-slate-950/80 p-3.5 flex items-center justify-between gap-3 mt-4">
+                <div class="flex items-center gap-2.5">
+                  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 shrink-0">
+                    <mat-icon class="text-sm">person_add</mat-icon>
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-white">Belum Memiliki Kode Lisensi?</div>
+                    <div class="text-[11px] text-slate-400">Daftar sekarang untuk sinkronisasi otomatis ke Admin</div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="auth.setAuthTab('register')"
+                  class="rounded-xl bg-emerald-500 px-3.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-emerald-400 transition shrink-0 cursor-pointer"
+                >
+                  Daftar Baru &rarr;
+                </button>
+              </div>
+
+              <!-- End-to-End Security Note -->
+              <div class="text-center pt-2">
+                <span class="inline-flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <mat-icon class="text-xs text-emerald-500">enhanced_encryption</mat-icon>
+                  Dilindungi Enkripsi AES-256 E2EE & Otorisasi Kriptografis
+                </span>
+              </div>
+
+            </form>
+          }
+
+          <!-- ============================================================== -->
+          <!-- TAB 2: FORM PENDAFTARAN MEMBER (Daftar & Sinkronisasi ke Admin) -->
+          <!-- ============================================================== -->
+          @if (auth.activeAuthTab() === 'register') {
+            <form class="space-y-4 animate-fade-in" (submit)="$event.preventDefault(); handleRegister()">
+              
+              <div class="rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-3 text-xs text-emerald-300 flex items-start gap-2">
+                <mat-icon class="text-emerald-400 text-sm shrink-0 mt-0.5">sync_alt</mat-icon>
                 <div>
-                  <label for="reg-name" class="block text-xs font-semibold text-slate-300 mb-1">Nama Lengkap</label>
+                  <span class="font-bold">Sinkronisasi Otomatis ke Dasbor Admin:</span>
+                  <p class="text-[11px] text-slate-400 mt-0.5">
+                    Data pendaftaran Anda langsung tersinkronisasi ke portal Admin Nexus untuk verifikasi & penerbitan lisensi resmi.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Nama Lengkap -->
+              <div>
+                <label for="reg-name" class="block text-xs font-semibold text-slate-300 mb-1">Nama Lengkap</label>
+                <div class="relative">
+                  <mat-icon class="absolute left-3 top-2.5 text-slate-500 text-sm">badge</mat-icon>
                   <input
                     id="reg-name"
                     type="text"
-                    [formControl]="nameControl"
-                    placeholder="Nama Pengguna"
-                    class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 px-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                    [formControl]="regNameControl"
+                    placeholder="Nama Lengkap Anda"
+                    class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <!-- Email & Phone Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="reg-email" class="block text-xs font-semibold text-slate-300 mb-1">Alamat Email</label>
+                  <div class="relative">
+                    <mat-icon class="absolute left-3 top-2.5 text-slate-500 text-sm">alternate_email</mat-icon>
+                    <input
+                      id="reg-email"
+                      type="email"
+                      [formControl]="regEmailControl"
+                      placeholder="nama@domain.com"
+                      class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="reg-phone" class="block text-xs font-semibold text-slate-300 mb-1">Nomor WhatsApp / HP</label>
+                  <div class="relative">
+                    <mat-icon class="absolute left-3 top-2.5 text-slate-500 text-sm">phone</mat-icon>
+                    <input
+                      id="reg-phone"
+                      type="tel"
+                      [formControl]="regPhoneControl"
+                      placeholder="08123456789"
+                      class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 pl-10 pr-3 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pilihan Paket Member -->
+              <div>
+                <label for="reg-plan" class="block text-xs font-semibold text-slate-300 mb-1">Pilihan Paket / Tingkat Akun</label>
+                <select
+                  id="reg-plan"
+                  [formControl]="regPlanControl"
+                  class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 px-3 text-xs text-white focus:border-emerald-500 focus:outline-none"
+                >
+                  <option value="MEMBER_GRATIS">Member Gratis (Akses Portal & Komunitas)</option>
+                  <option value="PRO_LICENSE">Pro Member (Termasuk Lisensi NEXUS-PREMIUM-2026)</option>
+                  <option value="NEXUS_VIP">Nexus VIP Member (Akses Global Nexus Portal)</option>
+                  <option value="ENTERPRISE">Enterprise Corporate Suite</option>
+                </select>
+              </div>
+
+              <!-- Kata Sandi & Konfirmasi -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="reg-pass" class="block text-xs font-semibold text-slate-300 mb-1">Kata Sandi Baru</label>
+                  <input
+                    id="reg-pass"
+                    type="password"
+                    [formControl]="regPasswordControl"
+                    (input)="checkRegStrength()"
+                    placeholder="Min 8 karakter..."
+                    class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 px-3 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label for="reg-email" class="block text-xs font-semibold text-slate-300 mb-1">Email Aktif</label>
+                  <label for="reg-confirm-pass" class="block text-xs font-semibold text-slate-300 mb-1">Konfirmasi Kata Sandi</label>
                   <input
-                    id="reg-email"
-                    type="email"
-                    [formControl]="emailControl"
-                    placeholder="user@domain.com"
-                    class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 px-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                    id="reg-confirm-pass"
+                    type="password"
+                    [formControl]="regConfirmPasswordControl"
+                    placeholder="Ulangi sandi..."
+                    class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 px-3 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
+              </div>
+
+              <!-- Password Strength Meter -->
+              @if (regPasswordControl.value) {
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-[11px]">
+                    <span class="text-slate-400">Kekuatan Sandi:</span>
+                    <span class="font-bold text-slate-200">{{ regPasswordStrength().label }}</span>
+                  </div>
+                  <div class="grid grid-cols-4 gap-1.5 h-1">
+                    <div [class]="regPasswordStrength().score >= 1 ? regPasswordStrength().color : 'bg-slate-800'" class="rounded-full"></div>
+                    <div [class]="regPasswordStrength().score >= 2 ? regPasswordStrength().color : 'bg-slate-800'" class="rounded-full"></div>
+                    <div [class]="regPasswordStrength().score >= 3 ? regPasswordStrength().color : 'bg-slate-800'" class="rounded-full"></div>
+                    <div [class]="regPasswordStrength().score >= 4 ? regPasswordStrength().color : 'bg-slate-800'" class="rounded-full"></div>
+                  </div>
+                </div>
+              }
+
+              <!-- Terms Checkbox -->
+              <div class="flex items-start gap-2 text-xs text-slate-400 pt-1">
+                <input
+                  id="agree-terms"
+                  type="checkbox"
+                  checked
+                  class="mt-0.5 rounded border-slate-700 bg-slate-950 text-emerald-500 focus:ring-0"
+                />
+                <label for="agree-terms" class="cursor-pointer text-[11px]">
+                  Saya setuju dengan enkripsi data E2EE & sinkronisasi otomatis ke Dasbor Admin Nexus.
+                </label>
               </div>
 
               @if (authErrorMessage()) {
@@ -211,153 +412,23 @@ import { validateActivationCode, ActivationCodeValidation } from '../core/auth-v
                 </div>
               }
 
-              <!-- Submit Button -->
+              <!-- Submit Register Button -->
               <button
                 type="submit"
                 class="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/25 hover:opacity-95 transition flex items-center justify-center gap-2 cursor-pointer"
               >
-                <mat-icon class="text-sm">verified</mat-icon>
-                Aktivasi Lisensi & Masuk
+                <mat-icon class="text-sm">how_to_reg</mat-icon>
+                <span>Daftar & Sinkronkan ke Admin Dashboard</span>
               </button>
 
               <div class="text-center text-[11px] text-slate-400 pt-1">
-                Sudah memiliki akun aktif?
+                Sudah memiliki Kode Lisensi?
                 <button
                   type="button"
                   (click)="auth.setAuthTab('login')"
-                  class="text-emerald-400 font-semibold hover:underline"
+                  class="text-emerald-400 font-semibold hover:underline cursor-pointer"
                 >
-                  Masuk di sini
-                </button>
-              </div>
-            </form>
-          }
-
-          <!-- TAB 2: MASUK / LOGIN -->
-          @if (auth.activeAuthTab() === 'login') {
-            <form class="space-y-4" (submit)="$event.preventDefault(); handleLogin()">
-              
-              <!-- Email Input -->
-              <div>
-                <label for="login-email" class="block text-xs font-semibold text-slate-300 mb-1.5">Alamat Email</label>
-                <div class="relative">
-                  <mat-icon class="absolute left-3 top-2.5 text-slate-500 text-sm">alternate_email</mat-icon>
-                  <input
-                    id="login-email"
-                    type="email"
-                    [formControl]="loginEmailControl"
-                    placeholder="admin@nexus-digital.com"
-                    class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <!-- Password Input -->
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label for="login-pass" class="text-xs font-semibold text-slate-300">Kata Sandi</label>
-                  <button
-                    type="button"
-                    (click)="auth.openForgotPassword()"
-                    class="text-xs text-cyan-400 hover:underline"
-                  >
-                    Lupa Kata Sandi?
-                  </button>
-                </div>
-                <div class="relative">
-                  <mat-icon class="absolute left-3 top-2.5 text-slate-500 text-sm">lock</mat-icon>
-                  <input
-                    id="login-pass"
-                    [type]="showPassword() ? 'text' : 'password'"
-                    [formControl]="loginPasswordControl"
-                    placeholder="Masukkan kata sandi..."
-                    class="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 pl-10 pr-10 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    (click)="showPassword.set(!showPassword())"
-                    class="absolute right-3 top-2.5 text-slate-500 hover:text-white"
-                  >
-                    <mat-icon class="text-sm">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Remember Me & 2FA notice -->
-              <div class="flex items-center justify-between text-xs text-slate-400">
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked class="rounded border-slate-700 bg-slate-950 text-cyan-500 focus:ring-0" />
-                  <span>Ingat perangkat ini</span>
-                </label>
-                <span class="text-emerald-400 flex items-center gap-1 text-[11px]">
-                  <mat-icon class="text-xs">shield</mat-icon> Dilindungi 2FA
-                </span>
-              </div>
-
-              @if (authErrorMessage()) {
-                <div class="rounded-xl border border-red-800/50 bg-red-950/40 p-3 text-xs text-red-300 flex items-center gap-2">
-                  <mat-icon class="text-red-400 text-sm shrink-0">error_outline</mat-icon>
-                  <span>{{ authErrorMessage() }}</span>
-                </div>
-              }
-
-              <!-- Submit Login Button -->
-              <button
-                type="submit"
-                class="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/25 hover:opacity-95 transition flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <mat-icon class="text-sm">lock_open</mat-icon>
-                Masuk dengan Proteksi 2FA
-              </button>
-
-              <!-- Social Login Divider -->
-              <div class="relative my-4">
-                <div class="absolute inset-0 flex items-center">
-                  <div class="w-full border-t border-slate-800"></div>
-                </div>
-                <div class="relative flex justify-center text-[10px] uppercase">
-                  <span class="bg-slate-900 px-3 text-slate-500 font-semibold tracking-wider">
-                    Atau masuk langsung dengan
-                  </span>
-                </div>
-              </div>
-
-              <!-- Google & Facebook Buttons -->
-              <div class="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  (click)="auth.openSocialModal('google')"
-                  class="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950/70 p-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 hover:border-slate-600 transition"
-                >
-                  <svg class="h-4 w-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                  </svg>
-                  <span>Google</span>
-                </button>
-
-                <button
-                  type="button"
-                  (click)="auth.openSocialModal('facebook')"
-                  class="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950/70 p-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 hover:border-slate-600 transition"
-                >
-                  <svg class="h-4 w-4 fill-[#1877F2]" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  <span>Facebook</span>
-                </button>
-              </div>
-
-              <div class="text-center text-[11px] text-slate-400 pt-1">
-                Belum memiliki lisensi aktivasi?
-                <button
-                  type="button"
-                  (click)="auth.setAuthTab('activate')"
-                  class="text-cyan-400 font-semibold hover:underline"
-                >
-                  Aktivasi Lisensi
+                  Masuk dengan Lisensi di sini
                 </button>
               </div>
 
@@ -373,49 +444,103 @@ import { validateActivationCode, ActivationCodeValidation } from '../core/auth-v
 export class AuthView {
   readonly auth = inject(AuthState);
 
-  // Form Controls
-  readonly activationCodeControl = new FormControl('LD-PREMIUM-2026', [Validators.required]);
-  readonly nameControl = new FormControl('Budi Pratama Santoso', [Validators.required]);
-  readonly emailControl = new FormControl('budi.santoso@levelingdigital.com', [Validators.required]);
+  // License-Only Login Form Control (empty by default)
+  readonly licenseInputControl = new FormControl('', [Validators.required]);
+  readonly licenseValidation = signal<ActivationCodeValidation>(validateActivationCode(''));
 
-  readonly loginEmailControl = new FormControl('admin@nexus-digital.com', [Validators.required]);
-  readonly loginPasswordControl = new FormControl('Leveling2026!', [Validators.required]);
-  readonly twoFactorInputControl = new FormControl('123456', [Validators.required]);
+  // 2FA TOTP Control
+  readonly twoFactorInputControl = new FormControl('', [Validators.required]);
 
-  readonly showPassword = signal<boolean>(false);
+  // Registration Form Controls (empty by default)
+  readonly regNameControl = new FormControl('', [Validators.required]);
+  readonly regEmailControl = new FormControl('', [Validators.required]);
+  readonly regPhoneControl = new FormControl('', [Validators.required]);
+  readonly regPlanControl = new FormControl<RegisteredMember['plan']>('PRO_LICENSE', [Validators.required]);
+  readonly regPasswordControl = new FormControl('', [Validators.required]);
+  readonly regConfirmPasswordControl = new FormControl('', [Validators.required]);
+  readonly regPasswordStrength = signal<PasswordStrength>({
+    score: 0,
+    label: 'Sangat Lemah',
+    color: 'bg-red-500',
+    checks: { minLength: false, hasUppercase: false, hasLowercase: false, hasNumber: false, hasSpecial: false },
+  });
+  readonly registrationSuccessMsg = signal<string>('');
+  readonly registeredLicenseKey = signal<string>('');
+
   readonly authErrorMessage = signal<string>('');
-  readonly activationValidation = signal<ActivationCodeValidation>(validateActivationCode('LD-PREMIUM-2026'));
 
-  onActivationCodeChange() {
-    const val = validateActivationCode(this.activationCodeControl.value || '');
-    this.activationValidation.set(val);
+  onLicenseInputChange() {
+    const val = validateActivationCode(this.licenseInputControl.value || '');
+    this.licenseValidation.set(val);
   }
 
-  fillPresetCode(code: string) {
-    this.activationCodeControl.setValue(code);
-    this.onActivationCodeChange();
+  fillPresetLicense(code: string) {
+    this.licenseInputControl.setValue(code);
+    this.onLicenseInputChange();
   }
 
-  handleActivate() {
+  handleLicenseLogin() {
     this.authErrorMessage.set('');
-    const code = this.activationCodeControl.value || '';
-    const name = this.nameControl.value || '';
-    const email = this.emailControl.value || '';
+    this.registrationSuccessMsg.set('');
 
-    const res = this.auth.activateAccount(code, name, email);
+    const code = this.licenseInputControl.value || '';
+    if (!code.trim()) {
+      this.authErrorMessage.set('Silakan masukkan Kode Aktivasi / Lisensi untuk masuk.');
+      return;
+    }
+
+    const res = this.auth.loginWithLicense(code);
     if (!res.success) {
       this.authErrorMessage.set(res.message);
     }
   }
 
-  handleLogin() {
-    this.authErrorMessage.set('');
-    const email = this.loginEmailControl.value || '';
-    const pass = this.loginPasswordControl.value || '';
+  checkRegStrength() {
+    const val = this.regPasswordControl.value || '';
+    this.regPasswordStrength.set(evaluatePasswordStrength(val));
+  }
 
-    const res = this.auth.login(email, pass);
+  handleRegister() {
+    this.authErrorMessage.set('');
+    this.registrationSuccessMsg.set('');
+
+    const name = this.regNameControl.value || '';
+    const email = this.regEmailControl.value || '';
+    const phone = this.regPhoneControl.value || '';
+    const password = this.regPasswordControl.value || '';
+    const confirmPassword = this.regConfirmPasswordControl.value || '';
+    const plan = this.regPlanControl.value || 'PRO_LICENSE';
+
+    const res = this.auth.registerMember(
+      { name, email, phone, password, confirmPassword },
+      plan
+    );
+
     if (!res.success) {
       this.authErrorMessage.set(res.message);
+    } else {
+      this.registrationSuccessMsg.set(res.message);
+      if (res.generatedLicense) {
+        this.registeredLicenseKey.set(res.generatedLicense);
+        this.licenseInputControl.setValue(res.generatedLicense);
+        this.onLicenseInputChange();
+      }
+      // Reset registration form
+      this.regNameControl.reset();
+      this.regEmailControl.reset();
+      this.regPhoneControl.reset();
+      this.regPasswordControl.reset();
+      this.regConfirmPasswordControl.reset();
+    }
+  }
+
+  useRegisteredLicense() {
+    const key = this.registeredLicenseKey();
+    if (key) {
+      this.licenseInputControl.setValue(key);
+      this.onLicenseInputChange();
+      this.auth.setAuthTab('login');
+      this.handleLicenseLogin();
     }
   }
 
